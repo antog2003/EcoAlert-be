@@ -25,8 +25,11 @@ public class CittadinoEntity extends UtenteEntity{
     @Column(name = "nazione")
     private String nazione;
 
-    @Column(name = "citta")
-    private String citta;
+    @Column(name = "numero_telefono")
+    private String numeroTelefono;
+
+    @Column(name = "codice_fiscale", unique = true)
+    private String codiceFiscale;
 
     /**
      * Segnalazioni create dal cittadino.

@@ -52,7 +52,7 @@ public class AllegatoService {
             allegato.setNomeFile(file.getOriginalFilename());
             allegato.setContentType(file.getContentType());
             allegato.setFileData(file.getBytes());
-            allegato.setDataCaricamento(java.time.LocalDateTime.now());
+            allegato.setDataAllegato(java.time.LocalDateTime.now());
             allegato.setSegnalazione(segnalazione);
 
             AllegatoEntity salvato = allegatoDao.save(allegato);
@@ -109,7 +109,7 @@ public class AllegatoService {
         output.setContentType(entity.getContentType());
         output.setIdSegnalazione(entity.getSegnalazione().getIdSegnalazione());
         output.setDataCaricamento(
-                entity.getDataCaricamento()
+                entity.getDataAllegato()
                         .atZone(ZoneId.systemDefault())
                         .toOffsetDateTime()
         );

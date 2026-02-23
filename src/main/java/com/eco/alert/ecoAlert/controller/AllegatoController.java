@@ -8,7 +8,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,15 +25,13 @@ public class AllegatoController implements AllegatiApi {
     @Autowired
     private AllegatoService allegatoService;
 
-    @Override
+    @PostMapping(path = "/segnalazione/{idSegnalazione}/allegato", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AllegatoOutput> uploadAllegato(
-            Integer idSegnalazione,
-            MultipartFile file
+            @PathVariable Integer idSegnalazione,
+            @RequestParam("file") MultipartFile file
     ) {
-
         log.info("POST /segnalazione/{}/allegato", idSegnalazione);
         AllegatoOutput output = allegatoService.caricaAllegato(idSegnalazione, file);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(output);
     }
 

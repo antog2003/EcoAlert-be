@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -63,6 +66,7 @@ public class SegnalazioneService {
         segnalazione.setCittadino((CittadinoEntity) utente); // mapping corretto
         segnalazione.setEnte(ente);
         segnalazione.setStato(StatoSegnalazione.INSERITO);
+        segnalazione.setDataSegnalazione(LocalDateTime.now());
 
         SegnalazioneEntity salvata = segnalazioneDao.save(segnalazione);
         log.info("Segnalazione {} creata in stato {}", salvata.getIdSegnalazione(), salvata.getStato());
@@ -99,6 +103,10 @@ public class SegnalazioneService {
             segnalazione.setDitta(nuovaDitta);
         }
 
+        if (nuovoStato == StatoSegnalazione.CHIUSO){
+            segnalazione.setDataChiusura(LocalDateTime.now());
+        }
+
         SegnalazioneEntity salvata = segnalazioneDao.save(segnalazione);
         return toOutput(salvata);
     }
@@ -115,6 +123,9 @@ public class SegnalazioneService {
             output.setIdUtente(se.getCittadino().getId());
             output.setIdEnte(se.getEnte().getId());
             output.setDitta(se.getDitta());
+            ZoneOffset offset = ZoneOffset.ofHours(1); // se vuoi UTC+1
+            output.setDataSegnalazione(se.getDataSegnalazione().atOffset(offset));
+            output.setDataChiusura(se.getDataChiusura() != null ? se.getDataChiusura().atOffset(offset) : null);
             return output;
         }).toList();
     }
@@ -130,6 +141,18 @@ public class SegnalazioneService {
                     output.setId(commentoEntity.getIdCommento());
                     output.setDescrizione(commentoEntity.getDescrizione());
                     output.setIdUtente(commentoEntity.getUtente().getId());
+                    ZoneOffset offset = ZoneOffset.ofHours(1); // UTC+1
+                    output.setDataCommento(commentoEntity.getDataCommento().atOffset(offset));
+
+                    if (commentoEntity.getUtente() instanceof CittadinoEntity cittadino){
+                        output.setNome(cittadino.getNome());
+                        output.setCognome(cittadino.getCognome());
+                    }
+
+                    if (commentoEntity.getUtente() instanceof EnteEntity ente){
+                        output.setNomeEnte(ente.getNomeEnte());
+                    }
+
                     return output;
                 })
                 .toList();
@@ -161,6 +184,9 @@ public class SegnalazioneService {
         output.setIdUtente(entity.getCittadino().getId());
         output.setIdEnte(entity.getEnte().getId());
         output.setDitta(entity.getDitta());
+        ZoneOffset offset = ZoneOffset.ofHours(1); // se vuoi UTC+1
+        output.setDataSegnalazione(entity.getDataSegnalazione().atOffset(offset));
+        output.setDataChiusura(entity.getDataChiusura() != null ? entity.getDataChiusura().atOffset(offset) : null);
         output.commenti(commentiOutputList(entity.getCommenti()));
         output.setAllegati(allegatiOutputList(entity.getAllegati()));
         return output;

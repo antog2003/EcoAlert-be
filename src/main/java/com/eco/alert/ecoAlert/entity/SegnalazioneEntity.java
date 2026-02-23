@@ -3,6 +3,8 @@ package com.eco.alert.ecoAlert.entity;
 import com.eco.alert.ecoAlert.enums.StatoSegnalazione;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -32,6 +34,12 @@ public class SegnalazioneEntity {
 
     @Column(name = "ditta")
     private String ditta;
+
+    @Column(name = "data_segnalazione", nullable = false)
+    private LocalDateTime dataSegnalazione;
+
+    @Column(name = "data_chiusura")
+    private LocalDateTime dataChiusura;
 
     /**
      * Stato corrente della segnalazione.

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Log4j2
 @Service
 public class CommentoService {
@@ -47,6 +49,7 @@ public class CommentoService {
         commento.setDescrizione(input.getDescrizione());
         commento.setUtente(utente);
         commento.setSegnalazione(segnalazione);
+        commento.setDataCommento(LocalDateTime.now());
 
         return commentoDao.save(commento);
     }

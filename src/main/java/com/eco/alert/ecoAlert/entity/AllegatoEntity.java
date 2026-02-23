@@ -24,8 +24,8 @@ public class AllegatoEntity {
     @Column(name = "file_data", nullable = false)
     private byte[] fileData;
 
-    @Column(name = "data_caricamento")
-    private LocalDateTime dataCaricamento;
+    @Column(name = "data_allegato")
+    private LocalDateTime dataAllegato;
 
     @ManyToOne
     @JoinColumn(name = "id_segnalazione", nullable = false)

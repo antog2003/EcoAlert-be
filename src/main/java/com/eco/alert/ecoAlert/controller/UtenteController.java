@@ -1,5 +1,6 @@
 package com.eco.alert.ecoAlert.controller;
 
+import com.eco.alert.ecoAlert.entity.SegnalazioneEntity;
 import com.eco.alert.ecoAlert.service.SegnalazioneService;
 import com.eco.alert.ecoAlert.service.UserService;
 import com.ecoalert.api.UtentiApi;
@@ -23,11 +24,6 @@ public class UtenteController implements UtentiApi {
     private SegnalazioneService segnalazioneService;
 
     @Override
-    public Optional<NativeWebRequest> getRequest() {
-            return Optional.empty();
-    }
-
-    @Override
     public ResponseEntity<UtenteDettaglioOutput> getUserById(Integer id) {
         log.info("Richiesta dettaglio utente con ID {}", id);
         UtenteDettaglioOutput utente = utenteService.getUserById(id);
@@ -48,5 +44,11 @@ public class UtenteController implements UtentiApi {
         SegnalazioneOutput segnalazione = segnalazioneService.getSegnalazioneById(id, idSegnalazione);
 
         return ResponseEntity.ok(segnalazione);
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteUser(Integer id){
+        utenteService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
