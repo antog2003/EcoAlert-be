@@ -1,6 +1,5 @@
 package com.eco.alert.ecoAlert.controller;
 
-
 import com.eco.alert.ecoAlert.exception.*;
 import com.ecoalert.model.Error;
 import lombok.extern.log4j.Log4j2;
@@ -105,6 +104,13 @@ public class ExceptionController {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(AllegatoNonTrovatoException.class)
+    public ResponseEntity<Error> handleAllegatoNonTrovato(AllegatoNonTrovatoException ex) {
+        Error error = new Error().detail("Allegato non trovato.").message(ex.getMessage());
+        log.error("AllegatoNonTrovato: {}", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(StatoNonValidoException.class)
     public ResponseEntity<Error> handleStatoNonValido(StatoNonValidoException ex) {
         Error error = new Error().detail("Stato Non Valido.").message(ex.getMessage());
@@ -125,5 +131,4 @@ public class ExceptionController {
         log.error("Exception generica: ", ex);
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 }

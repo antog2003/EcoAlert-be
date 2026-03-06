@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import java.util.List;
 
 /**
  * Entità base per tutti gli utenti del sistema (Cittadino ed Ente).

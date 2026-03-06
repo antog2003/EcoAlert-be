@@ -1,5 +1,6 @@
 package com.eco.alert.ecoAlert.controller;
 
+import com.eco.alert.ecoAlert.entity.SegnalazioneEntity;
 import com.eco.alert.ecoAlert.service.SegnalazioneService;
 import com.eco.alert.ecoAlert.service.UserService;
 import com.ecoalert.api.UtentiApi;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +24,6 @@ public class UtenteController implements UtentiApi {
     private SegnalazioneService segnalazioneService;
 
     @Override
-    public Optional<NativeWebRequest> getRequest() {
-            return Optional.empty();
-    }
-
-    @Override
     public ResponseEntity<UtenteDettaglioOutput> getUserById(Integer id) {
         log.info("Richiesta dettaglio utente con ID {}", id);
         UtenteDettaglioOutput utente = utenteService.getUserById(id);
@@ -41,6 +36,7 @@ public class UtenteController implements UtentiApi {
         return ResponseEntity.ok(segnalazioneService.getSegnalazioniByUserId(id));
     }
 
+
     @Override
     public ResponseEntity<SegnalazioneOutput> getSegnalazioneById(Integer id, Integer idSegnalazione) {
         log.info("Richiesta dettaglio segnalazione {} per utente {}", idSegnalazione, id);
@@ -50,4 +46,9 @@ public class UtenteController implements UtentiApi {
         return ResponseEntity.ok(segnalazione);
     }
 
+    @Override
+    public ResponseEntity<Void> deleteUser(Integer id){
+        utenteService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

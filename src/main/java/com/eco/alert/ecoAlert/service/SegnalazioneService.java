@@ -1,22 +1,22 @@
 package com.eco.alert.ecoAlert.service;
 
-import com.eco.alert.ecoAlert.dao.CommentoDao;
 import com.eco.alert.ecoAlert.dao.EnteDao;
 import com.eco.alert.ecoAlert.dao.SegnalazioneDao;
 import com.eco.alert.ecoAlert.dao.UtenteDao;
 import com.eco.alert.ecoAlert.entity.*;
 import com.eco.alert.ecoAlert.enums.StatoSegnalazione;
 import com.eco.alert.ecoAlert.exception.*;
-import com.ecoalert.model.CommentoOutput;
-import com.ecoalert.model.SegnalazioneInput;
-import com.ecoalert.model.SegnalazioneOutput;
-import com.ecoalert.model.StatoEnum;
+import com.ecoalert.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,6 +66,7 @@ public class SegnalazioneService {
         segnalazione.setCittadino((CittadinoEntity) utente); // mapping corretto
         segnalazione.setEnte(ente);
         segnalazione.setStato(StatoSegnalazione.INSERITO);
+        segnalazione.setDataSegnalazione(LocalDateTime.now());
 
         SegnalazioneEntity salvata = segnalazioneDao.save(segnalazione);
         log.info("Segnalazione {} creata in stato {}", salvata.getIdSegnalazione(), salvata.getStato());
@@ -102,6 +103,10 @@ public class SegnalazioneService {
             segnalazione.setDitta(nuovaDitta);
         }
 
+        if (nuovoStato == StatoSegnalazione.CHIUSO){
+            segnalazione.setDataChiusura(LocalDateTime.now());
+        }
+
         SegnalazioneEntity salvata = segnalazioneDao.save(segnalazione);
         return toOutput(salvata);
     }
@@ -118,19 +123,54 @@ public class SegnalazioneService {
             output.setIdUtente(se.getCittadino().getId());
             output.setIdEnte(se.getEnte().getId());
             output.setDitta(se.getDitta());
+            ZoneOffset offset = ZoneOffset.ofHours(1); // se vuoi UTC+1
+            output.setDataSegnalazione(se.getDataSegnalazione().atOffset(offset));
+            output.setDataChiusura(se.getDataChiusura() != null ? se.getDataChiusura().atOffset(offset) : null);
             return output;
         }).toList();
     }
 
     // Mappa i commenti nella DTO
     public List<CommentoOutput> commentiOutputList(List<CommentoEntity> entities) {
-        return entities.stream().map(commentoEntity -> {
-            CommentoOutput output = new CommentoOutput();
-            output.setId(commentoEntity.getIdCommento());
-            output.setDescrizione(commentoEntity.getDescrizione());
-            return output;
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(commentoEntity -> {
+                    CommentoOutput output = new CommentoOutput();
+                    output.setId(commentoEntity.getIdCommento());
+                    output.setDescrizione(commentoEntity.getDescrizione());
+                    output.setIdUtente(commentoEntity.getUtente().getId());
+                    ZoneOffset offset = ZoneOffset.ofHours(1); // UTC+1
+                    output.setDataCommento(commentoEntity.getDataCommento().atOffset(offset));
 
-        }).toList();
+                    if (commentoEntity.getUtente() instanceof CittadinoEntity cittadino){
+                        output.setNome(cittadino.getNome());
+                        output.setCognome(cittadino.getCognome());
+                    }
+
+                    if (commentoEntity.getUtente() instanceof EnteEntity ente){
+                        output.setNomeEnte(ente.getNomeEnte());
+                    }
+
+                    return output;
+                })
+                .toList();
+    }
+
+    // Mappa i commenti nella DTO
+    public List<AllegatoOutput> allegatiOutputList(List<AllegatoEntity> entities) {
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(allegatoEntity -> {
+                    AllegatoOutput output = new AllegatoOutput();
+                    output.setId(allegatoEntity.getId_allegato());
+                    output.setNomeFile(allegatoEntity.getNomeFile());
+                    return output;
+                })
+                .toList();
     }
 
     public SegnalazioneOutput toOutput(SegnalazioneEntity entity) {
@@ -144,7 +184,11 @@ public class SegnalazioneService {
         output.setIdUtente(entity.getCittadino().getId());
         output.setIdEnte(entity.getEnte().getId());
         output.setDitta(entity.getDitta());
+        ZoneOffset offset = ZoneOffset.ofHours(1); // se vuoi UTC+1
+        output.setDataSegnalazione(entity.getDataSegnalazione().atOffset(offset));
+        output.setDataChiusura(entity.getDataChiusura() != null ? entity.getDataChiusura().atOffset(offset) : null);
         output.commenti(commentiOutputList(entity.getCommenti()));
+        output.setAllegati(allegatiOutputList(entity.getAllegati()));
         return output;
     }
 
@@ -207,8 +251,10 @@ public class SegnalazioneService {
 
         }
 
-        if (segnalazione.getStato() == StatoSegnalazione.INSERITO) {
-            throw new StatoNonValidoException("Non puoi eliminare una segnalazione in stato INSERITO.");
+        if (segnalazione.getStato() != StatoSegnalazione.INSERITO && segnalazione.getStato() != StatoSegnalazione.CHIUSO) {
+            throw new StatoNonValidoException(
+                    "Non puoi eliminare una segnalazione in stato " + segnalazione.getStato()
+            );
         }
         segnalazioneDao.delete(segnalazione);
     }
@@ -253,5 +299,4 @@ public class SegnalazioneService {
         SegnalazioneEntity salvata = segnalazioneDao.save(segnalazione);
         return toOutput(salvata);
     }
-
 }

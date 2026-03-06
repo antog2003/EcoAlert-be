@@ -3,6 +3,8 @@ package com.eco.alert.ecoAlert.entity;
 import com.eco.alert.ecoAlert.enums.StatoSegnalazione;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -33,6 +35,12 @@ public class SegnalazioneEntity {
     @Column(name = "ditta")
     private String ditta;
 
+    @Column(name = "data_segnalazione", nullable = false)
+    private LocalDateTime dataSegnalazione;
+
+    @Column(name = "data_chiusura")
+    private LocalDateTime dataChiusura;
+
     /**
      * Stato corrente della segnalazione.
      * Salvato come stringa nel database.
@@ -53,4 +61,7 @@ public class SegnalazioneEntity {
     // se elimini un Utente, si eliminano i suoi Commenti o Segnalazioni.
     @OneToMany(mappedBy = "segnalazione", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<CommentoEntity> commenti;
+
+    @OneToMany(mappedBy = "segnalazione", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<AllegatoEntity> allegati;
 }

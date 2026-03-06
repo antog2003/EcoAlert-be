@@ -6,7 +6,6 @@ import com.ecoalert.api.SegnalazioniApi;
 import com.ecoalert.model.SegnalazioneInput;
 import com.ecoalert.model.SegnalazioneOutput;
 import com.ecoalert.model.SegnalazioneUpdateInputEnte;
-import com.ecoalert.model.StatoUpdateInput;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -69,10 +68,4 @@ public class SegnalazioneController implements SegnalazioniApi {
         SegnalazioneOutput out = segnalazioneService.modificaSegnalazione(id, idSegnalazione, input);
         return ResponseEntity.ok(out);
     }
-
-
 }
-
-
-
-

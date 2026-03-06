@@ -15,8 +15,99 @@ tags:
     description: Informazioni sugli utenti
   - name: Commenti
     description: Gestione dei commenti
+  - name: Allegati
+    description: Gestione immagini e file associati alle segnalazioni
 
 paths:
+
+  /segnalazioni/{idSegnalazione}/allegato:
+    post:
+      tags:
+        - Allegati
+      summary: Carica un'immagine per una segnalazione
+      operationId: uploadAllegato
+
+      parameters:
+        - name: idSegnalazione
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+
+      responses:
+        '201':
+          description: Allegato caricato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllegatoOutput'
+  /allegati/{idAllegato}:
+    get:
+      tags:
+        - Allegati
+      summary: Scarica un allegato
+      operationId: downloadAllegato
+      parameters:
+        - name: idAllegato
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File binario
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Allegato non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /allegati/{idAllegato}/allegato:
+    delete:
+      tags:
+        - Allegati
+      summary: Elimina un allegato
+      operationId: deleteAllegato
+      parameters:
+        - name: idAllegato
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Allegato eliminato
+        '403':
+          description: Utente non autorizzato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Allegato non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /user/{id}/segnalazione/{idSegnalazione}/commenti:
     post:
@@ -103,14 +194,76 @@ paths:
                 $ref: '#/components/schemas/Error'
 
 
+  /user/{id}:
+    delete:
+      tags:
+        - Utenti
+      summary: Elimina un utente (cittadino o ente)
+      description: >
+        Permette di eliminare un utente, sia cittadino che ente.
+        L'eliminazione potrebbe fallire se esistono segnalazioni ancora attive.
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Utente eliminato con successo
+        '400':
+          description: Impossibile eliminare l'utente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Utenti
+      summary: Ottiene i dettagli di un utente
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Utente trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtenteDettaglioOutput'
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Errore interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /user/{id}/segnalazioni/{idSegnalazione}:
     delete:
       tags:
         - Segnalazioni
       summary: Elimina una segnalazione appartenente al cittadino
       description: >
-                    Un cittadino può eliminare **solo** una sua segnalazione **non in stato di inserito**.
-                    Un ente non può eliminare alcuna segnalazione.
+        Un cittadino può eliminare **solo** una sua segnalazione **non in stato di inserito**.
+        Un ente non può eliminare alcuna segnalazione.
       operationId: deleteSegnalazione
       parameters:
         - name: id
@@ -404,38 +557,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /user/{id}:
-    get:
-      tags:
-        - Utenti
-      summary: Ottiene i dettagli di un utente
-      operationId: getUserById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Utente trovato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UtenteDettaglioOutput'
-        '404':
-          description: Utente non trovato
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Errore interno
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /user/{id}/segnalazione:
     post:
       tags:
@@ -489,7 +610,7 @@ components:
           type: integer
         nomeEnte:
           type: string
-        paese:
+        citta:
           type: string
         nazione:
           type: string
@@ -560,39 +681,38 @@ components:
       properties:
         id:
           type: integer
-          description: ID della segnalazione
         idUtente:
           type: integer
-          description: ID del cittadino che ha creato la segnalazione
         idEnte:
           type: integer
-          description: ID dell'ente associato alla segnalazione
         titolo:
           type: string
-          description: Titolo della segnalazione
         descrizione:
           type: string
-          description: Testo della segnalazione
         latitudine:
           type: number
           format: double
-          x-java-type: java.lang.Double
-          description: Latitudine della segnalazione
         longitudine:
           type: number
           format: double
-          x-java-type: java.lang.Double
-          description: Longitudine della segnalazione
         stato:
           $ref: '#/components/schemas/StatoEnum'
-          description: Stato della segnalazione
         ditta:
           type: string
-          description: Ditta della segnalazione
-        commenti: # ← LISTA DEI COMMENTI
+        dataSegnalazione:
+          type: string
+          format: date-time
+        dataChiusura:
+          type: string
+          format: date-time
+        commenti:
           type: array
           items:
             $ref: '#/components/schemas/CommentoOutput'
+        allegati:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllegatoOutput'
 
     UtenteDettaglioOutput:
       type: object
@@ -607,9 +727,11 @@ components:
           type: string
         cognome:
           type: string
-        nomeEnte:
+        codiceFiscale:
           type: string
-        paese:
+        numeroTelefono:
+          type: string
+        nomeEnte:
           type: string
         nazione:
           type: string
@@ -625,9 +747,15 @@ components:
           type: string
         password:
           type: string
-        paese:
+        codiceFiscale:
           type: string
+          description: Codice fiscale del cittadino
+        numeroTelefono:
+          type: string
+          description: Numero di telefono del cittadino
         nazione:
+          type: string
+        citta:
           type: string
         ruolo:
           type: string
@@ -656,7 +784,7 @@ components:
       type: string
       enum:
         - INSERITO
-        - PRESO_IN_CARICO
+        - RICEVUTO
         - SOSPESO
         - CHIUSO
 
@@ -674,3 +802,33 @@ components:
           type: integer
         descrizione:
           type: string
+        idUtente:
+          type: integer
+        nome:
+          type: string
+          description: Nome del cittadino (se ruolo cittadino)
+        cognome:
+          type: string
+          description: Cognome del cittadino (se ruolo cittadino)
+        nomeEnte:
+          type: string
+          description: Nome dell'ente (se ruolo ente)
+        dataCommento:
+          type: string
+          format: date-time
+          description: Data di creazione del commento
+
+    AllegatoOutput:
+      type: object
+      properties:
+        id:
+          type: integer
+        idSegnalazione:
+          type: integer
+        nomeFile:
+          type: string
+        contentType:
+          type: string
+        dataCaricamento:
+          type: string
+          format: date-time

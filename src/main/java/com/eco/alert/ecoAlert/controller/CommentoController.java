@@ -31,10 +31,10 @@ public class CommentoController implements CommentiApi {
         CommentoOutput out = new CommentoOutput();
         out.setId(entity.getIdCommento());
         out.setDescrizione(entity.getDescrizione());
+        out.setIdUtente(entity.getUtente().getId());
 
         return ResponseEntity.status(201).body(out);
     }
-
 
     @Override
     public ResponseEntity<Void> deleteCommento(
